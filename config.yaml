@@ -1,0 +1,4 @@
+agent_id: "agent-01"
+backend_url: "http://localhost:8080"
+interval_seconds: 5
+api_key: null
