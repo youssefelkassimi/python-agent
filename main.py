@@ -32,7 +32,7 @@ def main():
         sender.send(payload)
         time.sleep(interval)
 
-if __main__ == "__main__"
+if __main__ == "__main__":
     main()
 
 
