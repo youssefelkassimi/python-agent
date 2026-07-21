@@ -3,7 +3,7 @@ import time
 
 def get_network_metrics(prev_counters=None, interval=1.0):
     counters = psutil.net_io_counters()
-    connections = len(psutil.net_io_connections(kind='inet'))
+    connections = len(psutil.net_connections(kind='inet'))
 
     metrics = {
         "bytes_sent": counters.bytes_sent,
