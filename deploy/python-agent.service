@@ -1,0 +1,27 @@
+[Unit]
+Description=Python Monitoring Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=monitoring-agent
+Group=monitoring-agent
+WorkingDirectory=/opt/python-agent
+EnvironmentFile=-/etc/python-agent/agent.env
+ExecStart=/opt/python-agent/venv/bin/python3 /opt/python-agent/main.py
+Restart=on-failure
+RestartSec=5
+# Give the agent time to flush its retry queue and finish an in-flight
+# cycle on SIGTERM before systemd escalates to SIGKILL.
+TimeoutStopSec=20
+
+# Basic sandboxing. Loosen ProtectSystem/ReadWritePaths if the agent
+# needs to read logs elsewhere for log_monitor, or run docker/nvidia-smi.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/python-agent
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
