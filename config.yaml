@@ -1,10 +1,7 @@
 agent_id: "9d51ee29-e506-45c2-bc8e-95d41906f8e9"
 backend_url: "http://localhost:8080"
 
-# Prefer an environment variable for secrets instead of committing them
-# here. ${VAR_NAME} is substituted from the environment at load time;
-# ${VAR_NAME:-default} falls back to "default" if the variable is unset.
-# Example: export AGENT_API_KEY=xxxxx before starting the agent.
+
 api_key: "${AGENT_API_KEY:-}"
 
 # Intervals (seconds)
@@ -12,43 +9,35 @@ intervals:
   metrics: 30
   heartbeat: 10
   inventory: 300
-  discovery: 600      # discovery now runs on its own background thread/timer
+  discovery: 600      
   log_check: 10
   retry_flush: 30
 
-# SSL
 ssl:
   verify: true
   ca_cert: null
 
-# Retry queue
+
 retry:
   enabled: true
   max_size: 1000
   persist_path: "retry_queue.json"
   max_retries: 5
 
-# Heartbeat
+
 heartbeat:
   enabled: true
   interval: 10
 
-# Auto-registration on first connect
+
 auto_register:
   enabled: true
 
-# Local health-check HTTP endpoint. Useful for systemd, container
-# orchestrators, or an external uptime check to confirm the agent process
-# itself is alive and its collection loop hasn't stalled. Bound to
-# localhost by default - change `host` only if something outside this
-# machine needs to reach it, and put it behind a firewall/proxy if so.
-# GET /health -> 200 {"status": "ok", ...} or 503 if the loop has stalled.
 health_endpoint:
   enabled: false
   host: "127.0.0.1"
   port: 9273
 
-# Collectors to enable
 collectors:
   cpu: true
   memory: true
@@ -57,11 +46,11 @@ collectors:
   network: true
   processes: true
   load_avg: true
-  agent_self: true   # the agent's own CPU/mem/thread footprint
+  agent_self: true   
   gpu: false         # requires nvidia-smi on PATH; no-op elsewhere
-  docker: false      # requires the docker CLI on PATH; no-op elsewhere
+  docker: true      
 
-# Service monitoring
+
 services:
   - name: "sshd"
     platform: linux
@@ -72,7 +61,6 @@ services:
   - name: "WinRM"
     platform: win32
 
-# DNS checks (run concurrently, not one at a time)
 dns_checks:
   - domain: "google.com"
     type: "A"
@@ -82,7 +70,7 @@ dns_checks:
     type: "PTR"
     timeout: 5
 
-# HTTP checks (run concurrently, not one at a time)
+
 http_checks:
   - url: "https://google.com"
     method: "GET"
@@ -90,9 +78,7 @@ http_checks:
     timeout: 10
     ssl_verify: true
 
-# ICMP ping checks (run concurrently; falls back to the system `ping`
-# binary automatically if icmplib can't open ICMP sockets in this
-# environment, e.g. inside a container without CAP_NET_RAW)
+
 icmp_checks:
   - host: "8.8.8.8"
     count: 3
@@ -101,7 +87,7 @@ icmp_checks:
     count: 3
     timeout: 5
 
-# Log monitoring
+
 log_monitor:
   - path: "/var/log/syslog"
     patterns:
@@ -119,11 +105,7 @@ log_monitor:
     patterns: []
     max_lines: 50
 
-# Low-level discovery (LLD). Runs on its own background thread/timer so a
-# slow subnet scan never blocks metric collection or heartbeats. Host
-# scans within a run are parallelized; a hard cap (4096 hosts) prevents an
-# accidental huge scan if `subnets: null` auto-detection picks up
-# something bigger than expected.
+
 discovery:
   network:
     enabled: true
@@ -134,19 +116,7 @@ discovery:
     enabled: true
     ports: null
 
-# Trigger rules.
-#
-# Two optional fields add hysteresis and noise reduction on top of a
-# plain threshold comparison:
-#   for:                 seconds the condition must hold continuously
-#                         before the alert actually fires (ignores brief
-#                         spikes).
-#   recovery_threshold:  a separate, looser threshold used only to decide
-#                         when a firing trigger recovers, so a metric
-#                         hovering right at the edge of `threshold`
-#                         doesn't fire/recover repeatedly ("flapping").
-#                         Must be on the *safe* side of `threshold`
-#                         (lower for ">"/">=", higher for "<"/"<=").
+.
 triggers:
   - name: "high_cpu_usage"
     key: "system.cpu.cpu_percent"
@@ -201,13 +171,7 @@ triggers:
     severity: "high"
     message: "Swap usage is {value}% (threshold: {threshold}%)"
 
-# Remote command execution.
-#
-# Commands are matched by basename against `allowed_commands` (so passing
-# a full path can't bypass the allow list), never run through a shell,
-# and are rate-limited. Keep `enabled: false` unless you specifically
-# need this and understand the exposure of letting the backend run
-# commands on this host.
+
 remote_commands:
   enabled: false
   poll_interval: 15
@@ -223,16 +187,11 @@ remote_commands:
     - ipconfig
     - systeminfo
 
-# Plugin system. Each plugin file may declare PLUGIN_NAME,
-# PLUGIN_DESCRIPTION, and PLUGIN_INTERVAL (seconds) at module level;
-# PLUGIN_INTERVAL is now actually respected - a plugin with
-# PLUGIN_INTERVAL = 60 runs at most once a minute even if the main
-# metrics interval is shorter, and its last result is cached in between.
+
 plugins:
   enabled: true
   directory: "plugins"
 
-# Logging
 logging:
   level: "INFO"
   file: "agent.log"
