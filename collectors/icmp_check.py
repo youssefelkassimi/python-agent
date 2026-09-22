@@ -1,3 +1,4 @@
+
 import re
 import shutil
 import subprocess
@@ -55,36 +56,68 @@ def _ping_via_binary(host, count, timeout):
         result["error"] = "no 'ping' binary found on PATH"
         return result
 
-    count_flag = "-n" if sys.platform == "win32" else "-c"
-    timeout_flag = "-w" if sys.platform == "win32" else "-W"
-    timeout_value = str(int(timeout * 1000)) if sys.platform == "win32" else str(int(timeout))
+    is_win = sys.platform == "win32"
+
+    if is_win:
+        # Windows: -n count, -w timeout_ms
+        cmd = [_PING_BIN, "-n", str(count), "-w", str(int(timeout * 1000)), host]
+    else:
+        # Linux/macOS: -c count, -W timeout_seconds
+        # Use -W with an integer >= 1; some ping variants reject 0.
+        per_packet_timeout = max(1, int(timeout))
+        cmd = [_PING_BIN, "-c", str(count), "-W", str(per_packet_timeout), host]
 
     try:
         proc = subprocess.run(
-            [_PING_BIN, count_flag, str(count), timeout_flag, timeout_value, host],
-            capture_output=True, text=True, timeout=(timeout * count) + 5,
+            cmd,
+            capture_output=True, text=True,
+            timeout=(timeout * count) + 5,
         )
-        output = proc.stdout
+        output = proc.stdout or ""
+        stderr = proc.stderr or ""
 
+        # Packet loss: matches "0% packet loss", "100% packet loss",
+        # "0.0% packet loss", etc. (Linux & macOS), and
+        # "Lost = 0 (0% loss)" (Windows).
         loss_match = re.search(r"(\d+(?:\.\d+)?)\s*%\s*(?:packet\s*)?loss", output)
+        if not loss_match:
+            # Windows style: "Lost = 3 (100% loss)"
+            loss_match = re.search(r"\((\d+(?:\.\d+)?)\s*%\s*loss\)", output)
+
         if loss_match:
             loss = float(loss_match.group(1))
             result["packet_loss_percent"] = loss
             result["packets_received"] = round(count * (1 - loss / 100))
             result["status"] = "ok" if loss < 100 else "unreachable"
 
-        # Matches both "min/avg/max/mdev = 1.2/2.3/3.4/0.5 ms" (Linux) and
-        # "Minimum = 1ms, Maximum = 3ms, Average = 2ms" (Windows).
+        # RTT: Linux/macOS "min/avg/max/mdev = a/b/c/d ms"
         rtt_match = re.search(r"=\s*([\d.]+)/([\d.]+)/([\d.]+)", output)
         if rtt_match:
             result["min_rtt_ms"] = float(rtt_match.group(1))
             result["avg_rtt_ms"] = float(rtt_match.group(2))
             result["max_rtt_ms"] = float(rtt_match.group(3))
-        elif proc.returncode == 0:
-            result["status"] = "ok"
+        else:
+            # Windows style: "Minimum = 0ms, Maximum = 0ms, Average = 0ms"
+            win_rtt = re.search(
+                r"Minimum\s*=\s*(\d+)ms.*?Maximum\s*=\s*(\d+)ms.*?Average\s*=\s*(\d+)ms",
+                output, re.IGNORECASE | re.DOTALL,
+            )
+            if win_rtt:
+                result["min_rtt_ms"] = float(win_rtt.group(1))
+                result["max_rtt_ms"] = float(win_rtt.group(2))
+                result["avg_rtt_ms"] = float(win_rtt.group(3))
 
-        if not loss_match and proc.returncode != 0:
+        # If we couldn't parse loss but ping returned 0, assume success.
+        if not loss_match and proc.returncode == 0:
+            result["status"] = "ok"
+            result["packet_loss_percent"] = 0
+            result["packets_received"] = count
+
+        # If ping failed entirely and we found no stats, mark unreachable.
+        if proc.returncode != 0 and not loss_match:
             result["status"] = "unreachable"
+            if stderr:
+                result["error"] = stderr.strip()
 
     except subprocess.TimeoutExpired:
         result["status"] = "timeout"
@@ -113,7 +146,7 @@ def get_icmp_check(targets=None):
         })
         hosts.append(host)
 
-    if HAS_ICMPLIB and _probe_icmplib():
+    if HAS_ICMPLIB and _probe_icmplib() and False:
         try:
             ping_results = multiping(
                 hosts,
@@ -121,6 +154,8 @@ def get_icmp_check(targets=None):
                 timeout=max(t.get("timeout", 5) for t in targets),
                 privileged=False,
             )
+            __import__('pprint').pprint("hi")
+            __import__('pprint').pprint(ping_results)
             for r in results:
                 host = r["host"]
                 if host in ping_results:
@@ -149,6 +184,7 @@ def get_icmp_check(targets=None):
             for i, t in enumerate(targets)
         }
         for future in futures:
+            __import__('pprint').pprint(future)
             i = futures[future]
             try:
                 results[i] = future.result()
@@ -156,3 +192,4 @@ def get_icmp_check(targets=None):
                 results[i]["error"] = str(e)
 
     return results
+

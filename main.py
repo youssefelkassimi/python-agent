@@ -194,6 +194,7 @@ def _remote_command_loop(config, sender, logger):
             if pending:
                 commands = pending.get("commands", []) if isinstance(pending, dict) else []
                 for cmd in commands:
+                    logger.info(f"command {cmd}")
                     result = handler.execute(
                         command_id=cmd.get("id"),
                         command=cmd.get("command", ""),
@@ -241,7 +242,7 @@ def run_collection_loop(config, logger):
 
     plugin_loader = None
     if config.get("plugins", {}).get("enabled", True):
-        plugins_dir = config.get("plugins", {}).get("directory", "plugins")
+        plugins_dir = config.get("plufgins", {}).get("directory", "plugins")
         if os.path.isdir(plugins_dir):
             plugin_loader = PluginLoader(plugins_dir)
             loaded = plugin_loader.list_plugins()
