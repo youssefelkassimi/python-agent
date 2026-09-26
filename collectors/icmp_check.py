@@ -154,8 +154,6 @@ def get_icmp_check(targets=None):
                 timeout=max(t.get("timeout", 5) for t in targets),
                 privileged=False,
             )
-            __import__('pprint').pprint("hi")
-            __import__('pprint').pprint(ping_results)
             for r in results:
                 host = r["host"]
                 if host in ping_results:
@@ -184,7 +182,6 @@ def get_icmp_check(targets=None):
             for i, t in enumerate(targets)
         }
         for future in futures:
-            __import__('pprint').pprint(future)
             i = futures[future]
             try:
                 results[i] = future.result()

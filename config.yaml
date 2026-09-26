@@ -9,11 +9,7 @@ intervals:
   metrics: 30
   heartbeat: 10
   inventory: 300
-<<<<<<< HEAD
   discovery: 60
-=======
-  discovery: 600      
->>>>>>> f3f74377d2ffb87aa3b31ff3c267286d29215dea
   log_check: 10
   retry_flush: 30
 
@@ -21,28 +17,16 @@ ssl:
   verify: true
   ca_cert: null
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f3f74377d2ffb87aa3b31ff3c267286d29215dea
 retry:
   enabled: true
   max_size: 1000
   persist_path: "retry_queue.json"
   max_retries: 5
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f3f74377d2ffb87aa3b31ff3c267286d29215dea
 heartbeat:
   enabled: true
   interval: 10
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f3f74377d2ffb87aa3b31ff3c267286d29215dea
 auto_register:
   enabled: true
 
@@ -57,14 +41,12 @@ collectors:
   disk_usage: true
   disk_io: true
   network: true
-<<<<<<< HEAD
-  processes: truecks (run concurrently, not one at a time)
-=======
+  processes: true
   processes: true
   load_avg: true
-  agent_self: true   
-  gpu: false         # requires nvidia-smi on PATH; no-op elsewhere
-  docker: true      
+  agent_self: true
+  gpu: false
+  docker: true
 
 
 services:
@@ -72,12 +54,70 @@ services:
     platform: linux
   - name: "nginx"
     platform: linux
-  - name: "sshd"
-    platform: win32
+  - name: "docker"
+    platform: linux
+  - name: "postgresql"
+    platform: linux
+  - name: "mysql"
+    platform: linux
+  - name: "redis"
+    platform: linux
+  - name: "cron"
+    platform: linux
+  - name: "rsyslog"
+    platform: linux
+  - name: "chronyd"          # time sync (or "ntpd" / "systemd-timesyncd")
+    platform: linux
+  - name: "fail2ban"
+    platform: linux
+  - name: "ufw"              # or "firewalld" / "iptables"
+    platform: linux
+  - name: "haproxy"
+    platform: linux
+  - name: "prometheus"
+    platform: linux
+  - name: "grafana-server"
+    platform: linux
+  - name: "elasticsearch"
+    platform: linux
+  - name: "kubelet"
+    platform: linux
+  - name: "containerd"
+    platform: linux
+  - name: "NetworkManager"
+    platform: linux
+
   - name: "WinRM"
     platform: win32
+  - name: "W32Time"          # Windows Time
+    platform: win32
+  - name: "wuauserv"         # Windows Update
+    platform: win32
+  - name: "TermService"      # Remote Desktop
+    platform: win32
+  - name: "Dnscache"         # DNS Client
+    platform: win32
+  - name: "Dhcp"             # DHCP Client
+    platform: win32
+  - name: "LanmanServer"     # Server (SMB)
+    platform: win32
+  - name: "LanmanWorkstation"
+    platform: win32
+  - name: "EventLog"         # Windows Event Log
+    platform: win32
+  - name: "Schedule"         # Task Scheduler
+    platform: win32
+  - name: "Spooler"          # Print Spooler
+    platform: win32
+  - name: "MSSQLSERVER"
+    platform: win32
+  - name: "W3SVC"            # IIS
+    platform: win32
+  - name: "WinDefend"        # Defender Antivirus
+    platform: win32
+  - name: "BITS"
+    platform: win32
 
->>>>>>> f3f74377d2ffb87aa3b31ff3c267286d29215dea
 dns_checks:
   - domain: "google.com"
     type: "A"
@@ -100,27 +140,38 @@ icmp_checks:
   - host: "8.8.8.8"
     count: 3
     timeout: 5
-  - host: "127.0.0.1"#"1.1.1.1"
+  - host: "127.0.0.1" #"1.1.1.1"
     count: 3
     timeout: 5
 
 
 log_monitor:
+  # Linux text logs
   - path: "/var/log/syslog"
-    patterns:
-      - "error"
-      - "fail"
-      - "critical"
+    patterns: ["error", "fail", "critical"]
     max_lines: 100
+
   - path: "/var/log/auth.log"
-    patterns:
-      - "failed"
-      - "invalid"
-      - "refused"
+    patterns: ["failed", "invalid", "refused"]
     max_lines: 100
-  - path: "C:\\Windows\\System32\\winevt\\Logs\\Application.evtx"
-    patterns: []
-    max_lines: 50
+
+  # RHEL/Fedora equivalents (harmless if missing on Debian)
+  - path: "/var/log/messages"
+    patterns: ["error", "fail", "critical"]
+    max_lines: 100
+
+  - path: "/var/log/secure"
+    patterns: ["failed", "invalid", "refused"]
+    max_lines: 100
+
+  # Windows event logs - use the log NAME, not the .evtx file
+  - path: "Application"
+    patterns: ["error", "critical", "warning", "info"]
+    max_lines: 100
+
+  - path: "System"
+    patterns: ["error", "critical", "warning", "info"]
+    max_lines: 100
 
 
 discovery:
@@ -133,7 +184,6 @@ discovery:
     enabled: true
     ports: null
 
-.
 triggers:
   - name: "high_cpu_usage"
     key: "system.cpu.cpu_percent"

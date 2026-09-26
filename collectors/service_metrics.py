@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def _check_windows_service(name):
     try:
         result = subprocess.run(
-            ["sc", "query", name],
+            ["sc.exe", "query", name],
             capture_output=True, text=True, timeout=10
         )
         if "RUNNING" in result.stdout:
@@ -32,19 +32,61 @@ def _check_linux_service(name):
         return "error"
 
 
+# Map service platform -> local runtime platform
+_PLATFORM_ALIASES = {
+    "win32": "win32",
+    "windows": "win32",
+    "linux": "linux",
+}
+
+
+def _local_platform():
+    if sys.platform == "win32":
+        return "win32"
+    return "linux"  # treat everything else as linux for systemctl
+
+
 def get_service_metrics(services=None):
     if services is None:
         services = []
 
+    local = _local_platform()
     results = []
-    is_windows = sys.platform == "win32"
 
     for svc in services:
-        if is_windows:
-            status = _check_windows_service(svc)
+        if isinstance(svc, str):
+            # Backward compat: bare string, infer platform from local host
+            name = svc
+            platform = local
         else:
-            status = _check_linux_service(svc)
-        results.append({"name": svc, "status": status})
+            name = svc.get("name")
+            platform = _PLATFORM_ALIASES.get(
+                (svc.get("platform") or "").lower(), local
+            )
+
+        if not name:
+            continue
+
+        # Skip services that don't belong to this platform
+        if platform != local:
+            # results.append({
+            #     "name": name,
+            #     "platform": platform,
+            #     "status": "skipped",
+            #     "reason": f"service is for {platform}, host is {local}",
+            # })
+            continue
+
+        if local == "win32":
+            status = _check_windows_service(name)
+        else:
+            status = _check_linux_service(name)
+
+        results.append({
+            "name": name,
+            "platform": platform,
+            "status": status,
+        })
 
     running_procs = {}
     for proc in psutil.process_iter(["name"]):
