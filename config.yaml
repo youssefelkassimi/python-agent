@@ -1,8 +1,11 @@
-agent_id: "9d51ee29-e506-45c2-bc8e-95d41906f8e9"
-backend_url: "http://localhost:8080"
+agent_id:
+
+backend_url:
 
 
-api_key: "${AGENT_API_KEY:-}"
+
+api_key:
+
 
 # Intervals (seconds)
 intervals:
@@ -66,26 +69,26 @@ services:
     platform: linux
   - name: "rsyslog"
     platform: linux
-  - name: "chronyd"          # time sync (or "ntpd" / "systemd-timesyncd")
-    platform: linux
-  - name: "fail2ban"
-    platform: linux
-  - name: "ufw"              # or "firewalld" / "iptables"
-    platform: linux
-  - name: "haproxy"
-    platform: linux
-  - name: "prometheus"
-    platform: linux
-  - name: "grafana-server"
-    platform: linux
-  - name: "elasticsearch"
-    platform: linux
-  - name: "kubelet"
-    platform: linux
-  - name: "containerd"
-    platform: linux
-  - name: "NetworkManager"
-    platform: linux
+  # - name: "chronyd"          # time sync (or "ntpd" / "systemd-timesyncd")
+  #   platform: linux
+  # - name: "fail2ban"
+  #   platform: linux
+  # - name: "ufw"              # or "firewalld" / "iptables"
+  #   platform: linux
+  # - name: "haproxy"
+  #   platform: linux
+  # - name: "prometheus"
+  #   platform: linux
+  # - name: "grafana-server"
+  #   platform: linux
+  # - name: "elasticsearch"
+  #   platform: linux
+  # - name: "kubelet"
+  #   platform: linux
+  # - name: "containerd"
+  #   platform: linux
+  # - name: "NetworkManager"
+  #   platform: linux
 
   - name: "WinRM"
     platform: win32
@@ -97,24 +100,24 @@ services:
     platform: win32
   - name: "Dnscache"         # DNS Client
     platform: win32
-  - name: "Dhcp"             # DHCP Client
-    platform: win32
-  - name: "LanmanServer"     # Server (SMB)
-    platform: win32
-  - name: "LanmanWorkstation"
-    platform: win32
-  - name: "EventLog"         # Windows Event Log
-    platform: win32
-  - name: "Schedule"         # Task Scheduler
-    platform: win32
-  - name: "Spooler"          # Print Spooler
-    platform: win32
-  - name: "MSSQLSERVER"
-    platform: win32
-  - name: "W3SVC"            # IIS
-    platform: win32
-  - name: "WinDefend"        # Defender Antivirus
-    platform: win32
+  # - name: "Dhcp"             # DHCP Client
+  #   platform: win32
+  # - name: "LanmanServer"     # Server (SMB)
+  #   platform: win32
+  # - name: "LanmanWorkstation"
+  #   platform: win32
+  # - name: "EventLog"         # Windows Event Log
+  #   platform: win32
+  # - name: "Schedule"         # Task Scheduler
+  #   platform: win32
+  # - name: "Spooler"          # Print Spooler
+  #   platform: win32
+  # - name: "MSSQLSERVER"
+  #   platform: win32
+  # - name: "W3SVC"            # IIS
+  #   platform: win32
+  # - name: "WinDefend"        # Defender Antivirus
+  #   platform: win32
   - name: "BITS"
     platform: win32
 
