@@ -13,16 +13,9 @@ OPERATORS = {
     "!=": operator.ne,
 }
 
-# For each comparison operator, the direction a "recovery_threshold" must
-# move relative to "threshold" to actually add hysteresis instead of
-# accidentally making the trigger fire earlier.
 _RECOVERY_MUST_BE_LOOSER = {
-    # ">"/">=" fire on high values, so recovery must require dropping to a
-    # point at or below the fire threshold (rec <= thr) to add real hysteresis.
     ">": lambda thr, rec: rec <= thr,
     ">=": lambda thr, rec: rec <= thr,
-    # "<"/"<=" fire on low values, so recovery must require rising to a
-    # point at or above the fire threshold (rec >= thr).
     "<": lambda thr, rec: rec >= thr,
     "<=": lambda thr, rec: rec >= thr,
     "==": lambda thr, rec: True,

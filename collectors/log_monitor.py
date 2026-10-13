@@ -376,3 +376,6 @@ class LogMonitor:
                         matched.append({"line": line, "matched_pattern": pattern})
                         break
         return matched
+
+
+

@@ -2,8 +2,6 @@ agent_id:
 
 backend_url:
 
-
-
 api_key:
 
 
@@ -69,11 +67,11 @@ services:
     platform: linux
   - name: "rsyslog"
     platform: linux
-  # - name: "chronyd"          # time sync (or "ntpd" / "systemd-timesyncd")
-  #   platform: linux
-  # - name: "fail2ban"
-  #   platform: linux
-  # - name: "ufw"              # or "firewalld" / "iptables"
+  - name: "chronyd"          # time sync (or "ntpd" / "systemd-timesyncd")
+    platform: linux
+  - name: "fail2ban"
+    platform: linux
+  - name: "ufw"              # or "firewalld" / "iptables"
   #   platform: linux
   # - name: "haproxy"
   #   platform: linux
@@ -100,8 +98,8 @@ services:
     platform: win32
   - name: "Dnscache"         # DNS Client
     platform: win32
-  # - name: "Dhcp"             # DHCP Client
-  #   platform: win32
+  - name: "Dhcp"             # DHCP Client
+    platform: win32
   # - name: "LanmanServer"     # Server (SMB)
   #   platform: win32
   # - name: "LanmanWorkstation"
@@ -118,15 +116,15 @@ services:
   #   platform: win32
   # - name: "WinDefend"        # Defender Antivirus
   #   platform: win32
-  - name: "BITS"
-    platform: win32
+  # - name: "BITS"
+  #   platform: win32
 
 dns_checks:
   - domain: "google.com"
     type: "A"
     expected: null
     timeout: 5
-  - domain: "1.1.1.1"
+  - domain: "1.1.1.1.in-addr.arpa"
     type: "PTR"
     timeout: 5
 
@@ -143,7 +141,7 @@ icmp_checks:
   - host: "8.8.8.8"
     count: 3
     timeout: 5
-  - host: "127.0.0.1" #"1.1.1.1"
+  - host: "1.1.1.1"
     count: 3
     timeout: 5
 
@@ -256,6 +254,8 @@ remote_commands:
     - top
     - ipconfig
     - systeminfo
+    - uptime
+
 
 
 plugins:
